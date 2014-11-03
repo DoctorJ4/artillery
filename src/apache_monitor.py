@@ -20,14 +20,14 @@ def persistant_404(apache_file):
 	ipAlertList = []
 	now = str(datetime.datetime.today())
 	# search for 404's
-	for line in apache_file
-		if '404' in line
+	for line in apache_file:
+		if '404' in line:
 			# parse ip from line and record the activity in the parallel arrays
 			ipList.append(re.findall( r'[0-9]+(?:\.[0-9]+){3}', s ))
-			if ip in ipList
+			if ip in ipList:
 				index = ipList.index(ip)
 				ip404counter[index] = ip404counter[index] + 1
-			else
+			else:
 				ipList.append(ip)
 				ip404counter.append(1)
 				
@@ -35,7 +35,7 @@ def persistant_404(apache_file):
 	ipAlertList = [j for (i,j) in zip(ipList, ip404counter) if i >= 4]
 	
 	# let the good guys know
-	for ip in ipAlertList
+	for ip in ipAlertList:
 		subject = "%s [!] Artillery has detected (in the apache logs) a possible attack from the IP Address: %s" % (now, ip)
 		alert = "Artillery has detected a possible attack from IP address: %s after initiating multiple 404 errors." % (ip)
 		warn_the_good_guys(subject, alert)
