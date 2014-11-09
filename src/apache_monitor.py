@@ -17,13 +17,17 @@ def persistant_404(apache_file):
 	# create a record of each time a 404 occurred with each IP
 	ipList = []
 	ip404counter = []
-	ipAlertList = []
+	ipAlertList = [] 
 	now = str(datetime.datetime.today())
-	# search for 404's
-	for line in apache_file:
+	with open(apache_file) as f:
+		logs = f.readlines()
+	
+	for line in logs:
+		pattern = re.compile(r'[0-9]+(?:\.[0-9]+){3}')
+		ip = pattern.search(line).group()
+		#ip = re.findall( r'[0-9]+(?:\.[0-9]+){3}', s )
 		if '404' in line:
 			# parse ip from line and record the activity in the parallel arrays
-			ipList.append(re.findall( r'[0-9]+(?:\.[0-9]+){3}', s ))
 			if ip in ipList:
 				index = ipList.index(ip)
 				ip404counter[index] = ip404counter[index] + 1
@@ -32,13 +36,13 @@ def persistant_404(apache_file):
 				ip404counter.append(1)
 				
 	# if the number of times a 404 is initiated by the IP exceeds a number ( maybe 4? ) then record that in a list
-	ipAlertList = [j for (i,j) in zip(ipList, ip404counter) if i >= 4]
-	
-	# let the good guys know
-	for ip in ipAlertList:
-		subject = "%s [!] Artillery has detected (in the apache logs) a possible attack from the IP Address: %s" % (now, ip)
-		alert = "Artillery has detected a possible attack from IP address: %s after initiating multiple 404 errors." % (ip)
-		warn_the_good_guys(subject, alert)
+	for Badip, numHits in zip(ipList, ip404counter):
+		if numHits > 4:
+			#READABLE TESTING PHRASE
+			#print '{0:19} 404s: {1:1}'.format(Badip, numHits)
+			subject = "%s [!] Artillery has detected multiple 404's in the apache logs" % (now, Badip)
+			alert = "%s [!] Artillery has detected a possible attack from IP address: %s after initiating multiple 404 errors." % (now, ip)
+			warn_the_good_guys(subject, alert)
 	
 # grab the access logs and tail them
 access = "/var/log/apache2/access.log"
